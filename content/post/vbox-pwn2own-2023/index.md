@@ -34,7 +34,7 @@ VirtualBox source code is large, I can't just read all of them in a short amount
 - [https://secret.club/2021/01/14/vbox-escape.html](https://secret.club/2021/01/14/vbox-escape.html)
 - [https://github.com/MorteNoir1/virtualbox_e1000_0day](https://github.com/MorteNoir1/virtualbox_e1000_0day)
 
-The VirtualBox architecture is as follow (the picture is taken from [Chen Nam's slide at HITB2021](https://conference.hitb.org/hitbsecconf2021ams/materials/D2T2%20-%20Discovering%2010+%20Vulnerabilities%20in%20Virtualbox%20-%20Chen%20Nan.pdf))
+The VirtualBox architecture is as follow (the picture is taken from [Chen Nan's slide at HITB2021](https://conference.hitb.org/hitbsecconf2021ams/materials/D2T2%20-%20Discovering%2010+%20Vulnerabilities%20in%20Virtualbox%20-%20Chen%20Nan.pdf))
 
 ![](VBoxArch.png)
 
@@ -55,7 +55,7 @@ For example, let's look at the code in the `DevTpm.cpp` file:
 
 In the image above, when the R0 component receives this request, it will pass to R3 component. The return code (`rc`) is `VINF_IOM_R3_MMIO_WRITE`. According to the source code comment, it is "**Reason for leaving RZ: MMIO write**". There are other similar values: `VINF_IOM_R3_MMIO_READ`, `VINF_IOM_R3_IOPORT_WRITE`, `VINF_IOM_R3_IOPORT_READ`, ...
 
-If you want to know more detail about VirtualBox architechture, I suggest you to read the [slide by Chen Nam.](https://conference.hitb.org/hitbsecconf2021ams/materials/D2T2%20-%20Discovering%2010+%20Vulnerabilities%20in%20Virtualbox%20-%20Chen%20Nan.pdf) You can also watch his video [here](https://www.youtube.com/watch?v=_4kttxArxuk).
+If you want to know more detail about VirtualBox architechture, I suggest you to read the [slide by Chen Nan.](https://conference.hitb.org/hitbsecconf2021ams/materials/D2T2%20-%20Discovering%2010+%20Vulnerabilities%20in%20Virtualbox%20-%20Chen%20Nan.pdf) You can also watch his video [here](https://www.youtube.com/watch?v=_4kttxArxuk).
 
 After having a basic understanding about VirtualBox, the next thing I did is to find some attack vectors. Usually, with VirtualBox, the attack scenario will be an untrusted code running within the guest machine. It will communicate with the host to compromise it. There are two methods a guest OS can talk to the host:
 
