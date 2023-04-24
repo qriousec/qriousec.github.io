@@ -9,11 +9,27 @@ name = "Home"
 url = "/"
 weight = -100
 
-  [menu.main.params]
-  icon = "home"
+    [menu.main.params]
+    icon = "home"
 
 [params.sidebar.avatar]
 enabled = false
 
 [params.footer]
 customText = '"To err is human, to hack is divine."'
+
+[params.comments]
+enabled = true
+provider = "giscus"
+
+    [params.comments.giscus]
+    repo = "qriousec/qriousec.github.io"
+    repoID = "R_kgDOIlT8yQ"
+    category = "Q&A"
+    categoryID = "DIC_kwDOIlT8yc4CWAt1"
+    mapping = "pathname"
+    strict = 0
+    reactionsEnabled = 1
+    emitMetadata = 0
+    inputPosition = "top"
+    lang = "en"
