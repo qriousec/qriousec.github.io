@@ -6,7 +6,7 @@ draft: false
 
 ## Introduction
 
-Hi, I am Trung (xikhud). Last month, I joined [Qrious security team](https://twitter.com/qriousec) as a new member, and my first target was to find and reproduce the security bugs that [@bienpnn](https://twitter.com/bienpnn) used at the Pwn2Own Vancouver 2023 to escape the VirtualBox VM.
+Hi, I am Trung (xikhud). Last month, I joined [Qrious Secure team](https://twitter.com/qriousec) as a new member, and my first target was to find and reproduce the security bugs that [@bienpnn](https://twitter.com/bienpnn) used at the Pwn2Own Vancouver 2023 to escape the VirtualBox VM.
 
 Since VirtualBox is an open-source software, I can just download the source code from their homepage. The [version](https://download.virtualbox.org/virtualbox/7.0.6/VirtualBox-7.0.6.tar.bz2) of VirtualBox at the time of the Pwn2Own competition was 7.0.6.
 
