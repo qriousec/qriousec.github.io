@@ -8,15 +8,15 @@ Last year, we welcomed three new members to the Qrious junior team. Our ongoing 
 
 We have seen some promising results from our juniors:
 
-    •   Trung demonstrated his skill at Pwn2Own Mobile, pwning Sonos speaker.
-    •   Lan successfully exploited a zero-day vulnerability in the Chrome GPU process.
+- Trung demonstrated his skill at Pwn2Own Mobile, pwning Sonos speaker.
+- Lan successfully exploited a zero-day vulnerability in the Chrome GPU process.
 
-Initially, we were uncertain if our approach would bring any value to this highly specialized field. However, we strongly believe that continuously tackling difficult problems and learning from them is undoubtedly the right path. By mentoring our juniors, we ( senior members ) not only clarify our own objectives and refine our vulnerability research methodologies but also reach new heights:
+Initially, we were uncertain if our approach would bring any value to anyone in this highly specialized field. However, we strongly believe that continuously tackling difficult problems and learning from them is undoubtedly the right path. By mentoring our juniors, we (the senior members) not only clarify our own objectives and refine our vulnerability research methodologies but also reach new heights:
 
-    •   We maintained our third consecutive year of success at Pwn2Own Mobile, pwning Samsung devices.
-    •   We have successfully exploited the Linux Kernel and Chrome in both the Kernel CTF and V8 CTF using zero-day exploits.
-    •   We reported a total of six zero-days in Chrome, including a full chain to the Chrome GPU process (not fully disclosed yet!).
-    •   We also disclosed few others LPE in Windows Kernel and Linux Kernel at Pwn2Own and TyphoonPwn
-    •   Plus, we have many more undisclosed zero-days (undoubtedly)...
+- We successfully pwned Samsung Galaxy at two consecutive editions of Pwn2Own Mobile Toronto.
+- We have successfully exploited the Linux Kernel and Chrome in both the Kernel CTF and V8 CTF using zero-day exploits.
+- We reported a total of six zero-days in Chrome, including a full chain to the Chrome GPU process (not fully disclosed yet!).
+- We also disclosed a few other LPEs in Windows Kernel and Linux Kernel at Pwn2Own Vancouver and TyphoonPwn Seoul.
+- Plus, we have many more undisclosed zero-days (undoubtedly)...
 
-Encouraged by our successes, we’ve decided to expand the junior team. We are opening 2-3 positions for university students, and we’re also considering highly motivated high school students. If you believe you qualify, please fill out the form below, and we will get back to you as soon as possible.
+Encouraged by our successes, we’ve decided to expand the junior team. We are opening 2-3 positions for university students, and we’re also considering highly motivated high school students. If you believe you qualify, please fill out [this form](https://forms.gle/dYiPYSqfZadt2cfg8), and we will get back to you as soon as possible.
