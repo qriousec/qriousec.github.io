@@ -8,8 +8,8 @@ Last year, we welcomed three new members to the Qrious junior team. Our ongoing 
 
 We have seen some promising results from our juniors:
 
-- Trung demonstrated his skill at Pwn2Own Mobile, pwning Sonos speaker.
-- Lan successfully exploited a zero-day vulnerability in the Chrome GPU process.
+- Trung pwned the Sonos speaker at Pwn2Own Mobile Toronto.
+- Lan exploited a zero-day vulnerability against Chrome GPU process.
 
 Initially, we were uncertain if our approach would bring any value to anyone in this highly specialized field. However, we strongly believe that continuously tackling difficult problems and learning from them is undoubtedly the right path. By mentoring our juniors, we (the senior members) not only clarify our own objectives and refine our vulnerability research methodologies but also reach new heights:
 
