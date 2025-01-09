@@ -291,6 +291,7 @@ With full read/write capabilities, we are now ready to take the final step—ach
 Code execution
 After getting arbitrary read/write primitive, we easily overwrite shellcode into the JIT compiled page, and obtain shell execution:
 
+![](c.png)
 
 ## Exploitation on macOS machine (ARM64 architecture)
 
@@ -307,11 +308,12 @@ Pointer Authentication (PAC): Many function pointers and return addresses are pr
 APRR (Authenticated Pointer Read Restriction): Certain memory regions, including JIT code pages, are protected from direct reading, which makes memory disclosure attacks less effective.
 
 Our next step was bypassing JIT memory protections, since our previous approach of injecting shellcode into JIT pages no longer worked. And in this blog we only discuss how to overcome this mitigation, because others are more hardly touchable for us now. 
-Bypassing JIT Memory Protections
 
-On this part, we found [Ivan Krstić’s 2016 Black Hat talk ](https://www.blackhat.com/docs/us-16/materials/us-16-Krstic.pdf). His presentation provided the evolution of IOS JIT hardenings. On iOS 9, JIT pages were still RWX:
+### Bypassing JIT Memory Protections
+
+On this part, we found [Ivan Krstić’s 2016 Black Hat talk ](https://www.blackhat.com/docs/us-16/materials/us-16-Krstic.pdf). His presentation provided the evolution of IOS JIT hardenings. On iOS 9, JIT pages were still RWX.
 However, with iOS 10, Apple introduced stricter memory protections: 
-On our understanding, this mitigation makes JIT pages dynamically switch between RW (Read-Write) and RX (Read-Execute) but are never RWX at the same time. Instead, they follow a Write XOR Execute (W^X) policy:
+On our understanding, this mitigation makes JIT pages dynamically switch between RW (Read-Write) and RX (Read-Execute) but are never RWX at the same time. Instead, they follow a Write XOR Execute (W^X) policy.
 
 When JIT compiles code, the page is temporarily marked RW (Read-Write) but not executable.
 Once the JIT compilation is finished, the page is switched to RX (Read-Execute) but not writable.
@@ -328,14 +330,14 @@ static ALWAYS_INLINE void* performJITMemcpy(void *dst, const void *src, size_t n
 //...
 ```
 
-To achieve arbitrary code execution, we would need to either re-enable write permissions on an existing JIT page or use a ROP-based approach to call the system function (in case [CFI](https://en.wikipedia.org/wiki/Control-flow_integrity) was disabled,  but we don’t know on Safari or other macOS system application as the same or not) 
+To achieve arbitrary code execution, we would need to either re-enable write permissions on an existing JIT page or use a ROP-based approach to call the system function (in case [CFI](https://en.wikipedia.org/wiki/Control-flow_integrity) was disabled,  but we don’t know on Safari or other macOS system application as the same or not)   
 Technique: ROPing to Execute System Commands
 
 Instead of modifying JIT code itself, we leveraged existing executable instructions within the JavaScriptCore binary to construct a ROP chain that would call system("/bin/sh").
 
 Our approach was as follows:
 
-Leaking JSC address base and system() function address
+1. Leaking JSC address base and system() function address
 By arbitrary read/write, we can easily leak JSC base address and other system functions:
 ```
 const jscBase = mathExpAddr - JSC_BASE_TO_MATH_EXP;
@@ -421,6 +423,7 @@ By combining these two gadgets, we can load the system() function address into x
 
 Using this ROP-based approach, we successfully bypassed JIT memory protections and achieved code execution on macOS as the below image:
 
+![](d.png)
 
 ### The PAC Roadblock
 
