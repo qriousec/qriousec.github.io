@@ -1,4 +1,9 @@
 
+---
+title: "A Brief JavaScriptCore RCE Story"
+date: 2025-04-10T10:22:35Z
+draft: false
+---
 ## Introduction
 
 
@@ -424,7 +429,7 @@ Using this ROP-based approach, we successfully bypassed JIT memory protections a
 
   In this blog, we explored JavaScriptCore exploitation, on x86-64 architecture and overcame one arm64 mitigation. This project was a valuable learning experience for us, laying the foundation for future Safari and JavaScriptCore research. During understanding mitigation, we found the blog [JITSploitation III](https://googleprojectzero.blogspot.com/2020/09/jitsploitation-three.html): Subverting Control Flow, Saelo had described JIT memory protection as the small part of APRR “With the APRR register set up in this way, it would effectively enforce a strict W^X policy: no page could ever be writable and executable at the same time. So we were confused to explain both mitigations, in the end we decided to point out only JIT memory protection as we only discuss bypassing itself. If something goes wrong because lacking of our knowledge, please let us know, thank you everyone for reading our blog. 
 
-The PoC and exploitation scripts are available on GitHub.
+The PoC and exploitation scripts are available [here](https://github.com/qriousec/qriousec.github.io/tree/main/content/post/jsc-uninit).
 
 References  
 [Note changes after 3 years of attacking JSC (Saelo)](https://gist.github.com/saelo/dd598a91a27ddd7cb9e410dc92bf37a1)  
