@@ -249,6 +249,8 @@ The fix in commit 9158c52 simply `memset` all remaining values to 0, NaN, or Und
 The next step is to gain arbitrary read/write. In order to do that, let's again illustrate the internal array structure in JavaScriptCore. From the Frack article Attacking JavaScript Engines, Saleo describe butterfly concept in general as:
  “Internally, JSC stores both properties and elements in the same memory region and stores a pointer to that region in the object itself. This pointer points to the middle of the region, properties are stored to the left of it (lower addresses) and elements to the right of it. There is also a small header located just before the pointed to address that contains the length of the element vector. This concept is called a "Butterfly" since the values expand to the left and right, similar to the wings of a butterfly.”
 
+![](b.png)
+
 ### Leaking addresses 
 
 Since JSC arrays have dynamic types, and the uninitialized memory happens in an array value, we can simply spray the heap with some object pointers, free it with gc() , then trigger the vulnerability multiple times to force the allocation to reuse the heap. Then we can read the pointer from double arrays directly thus achieving memory leak. Illustration by snippet code below:  
