@@ -3,8 +3,9 @@ title: "A Brief JavaScriptCore RCE Story"
 date: 2025-04-10T10:22:35Z
 draft: false
 ---
-## Introduction
 
+
+## Introduction
 
 The vulnerability introduced in commit [053d9a84](https://github.com/WebKit/WebKit/commit/053d9a84ec27095cb583274daaf41ef796c80633) is a trivial uninitialized memory issue, easy to catch by simple unit tests. At the time of discovering the bug, we believed that this would be fixed very soon. However, for exploration purposes, we took it as a chance to study the current WebKit JavaScript Engine - JavaScriptCore internals, and document our journey for the sake of contributing to the security community.
 
