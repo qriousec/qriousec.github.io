@@ -56,23 +56,9 @@ When toReversed is called on a JavaScript object, it will make sure the length i
 
 ## The Bug: Vector Length vs Public Length Mismatch
 
-```cpp
-ALWAYS_INLINE unsigned Butterfly::optimalContiguousVectorLength(Structure* structure, unsigned vectorLength)
-{
-   return optimalContiguousVectorLength(structure ? structure->outOfLineCapacity() : 0, vectorLength); //[1]
-}
-ALWAYS_INLINE unsigned Butterfly::optimalContiguousVectorLength(size_t propertyCapacity, unsigned vectorLength)
-{
-   if (!vectorLength)
-       vectorLength = BASE_CONTIGUOUS_VECTOR_LEN_EMPTY;
-   else
-       vectorLength = std::max(BASE_CONTIGUOUS_VECTOR_LEN, vectorLength);//[2]
-   return availableContiguousVectorLength(propertyCapacity, vectorLength);
-}
+*In the JavaScriptCore IndexingHeader class, `publicLength` is public visible length (array.length), while `vectorLength` is the length of the indexed property storage ( the actual size of storage it is holding).*
 
-```
-
-Upon entering `fastToReversed`, in case `length` value is smaller than 3, especially equal 1, `vectorLength` will be assigned a value of 3 at [2], while the butterfly `publicLength` remains 1. 
+When the program enters `fastToReversed`, `vectorLength` is calculated by `optimalContiguousVectorLength` at [1] function, in case `length` value is smaller than 3, especially equal 1, `vectorLength` will be assigned a value of 3 at [1.2], while the butterfly `publicLength` remains 1. 
 
 ```cpp
 JSArray* JSArray::fastToReversed(JSGlobalObject* globalObject, uint64_t length)
@@ -107,7 +93,7 @@ JSArray* JSArray::fastToReversed(JSGlobalObject* globalObject, uint64_t length)
            return nullptr;
 
 
-       auto vectorLength = Butterfly::optimalContiguousVectorLength(resultStructure, length);//[2.1]
+       auto vectorLength = Butterfly::optimalContiguousVectorLength(resultStructure, length);//[1]
        void* memory = vm.auxiliarySpace().allocate(
            vm,
            Butterfly::totalSize(0, 0, true, vectorLength * sizeof(EncodedJSValue)),
@@ -120,12 +106,12 @@ JSArray* JSArray::fastToReversed(JSGlobalObject* globalObject, uint64_t length)
 
 
        auto resultData = butterfly->contiguous().data();
-       memcpy(resultData, srcData, sizeof(JSValue) * length);//[1]
+       memcpy(resultData, srcData, sizeof(JSValue) * length);//[2]
 
 
        if (hasDouble(indexingType)) {
            auto data = butterfly->contiguousDouble().data();
-           std::reverse(data, data + length); // [2]
+           std::reverse(data, data + length); // [3]
        } else
            std::reverse(resultData, resultData + length);
 
@@ -134,11 +120,22 @@ JSArray* JSArray::fastToReversed(JSGlobalObject* globalObject, uint64_t length)
    }
 //...
 }
+
+ALWAYS_INLINE unsigned Butterfly::optimalContiguousVectorLength(Structure* structure, unsigned vectorLength)
+{
+   return optimalContiguousVectorLength(structure ? structure->outOfLineCapacity() : 0, vectorLength); //[1.1]
+}
+ALWAYS_INLINE unsigned Butterfly::optimalContiguousVectorLength(size_t propertyCapacity, unsigned vectorLength)
+{
+   if (!vectorLength)
+       vectorLength = BASE_CONTIGUOUS_VECTOR_LEN_EMPTY;
+   else
+       vectorLength = std::max(BASE_CONTIGUOUS_VECTOR_LEN, vectorLength);//[1.2]
+   return availableContiguousVectorLength(propertyCapacity, vectorLength);
+}
 ```
 
-Additionally, after initializing the necessary butterfly’s lengths, the function goes through `memcpy` (1) and immediately performs a reverse operation (2) , leaving any leftover uninitialized if `publicLength` is smaller than `vectorLength`. 
-
-In the JavaScriptCore IndexingHeader class, `publicLength` is public visible length (array.length), while `vectorLength` is the length of the indexed property storage ( the actual size of storage it is holding). 
+Additionally, after initializing the necessary butterfly’s lengths, the function goes through `memcpy` [2] and immediately performs a reverse operation [3] , leaving any leftover uninitialized if `publicLength` is smaller than `vectorLength`. 
 
 ### Proof of Concept
 
