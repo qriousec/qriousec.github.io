@@ -14,8 +14,3 @@ We are a team of experienced hackers who love nothing more than finding vulnerab
 
 You can find us on Twitter at [@qriousec](https://twitter.com/qriousec), or contact us by email at team@qriousec.io.
 
-If you want to send us an encrypted email, you can download our public GPG key:
-
-```
-gpg --keyserver hkp://pgp.mit.edu --search-keys 63D7ABF4374B0E71A0EBBF3BEB84246E32966165
-```
