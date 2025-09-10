@@ -7,10 +7,10 @@ draft: false
 # **Out-of-bound read in ANGLE CopyNativeVertexData from Compromised Renderer**
 
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image1.png">
-  <em>Figure 1: Crashes on MacOS</em>
-</p>
+  <figcaption><Figure 1: Crashes on MacOS</figcaption>
+</figure>
 
 
 ## Introduction
@@ -23,10 +23,11 @@ Chrome’s graphics system includes everything needed to process, display, optim
 
 WebGL, in particular, is an important library within Chromium. It provides multiple APIs for creating 3D graphic effectively, and eliminates the need for external graphic software.  
 
-<p align="center">
+
+<figure class="fig-center">
   <img src="images/image2.png">
-  <em>Figure 2: A displaying example of rendering simple color by WebGL</em>
-</p>
+  <figcaption><Figure 2: A displaying example of rendering simple color by WebGL</figcaption>
+</figure>
 
 
 
@@ -35,10 +36,10 @@ WebGL, in particular, is an important library within Chromium. It provides multi
 When a WebGL API is called from JavaScript, it passes through Blink bindings before being sent down to the GPU process via the command buffer. The module responsible for handling these API calls in the GPU process is ANGLE. ANGLE’s front-end initiates necessary validations and interacts with renderer APIs, ultimately channeling commands to OS-specific back-end APIs like Vulkan for Linux, D3D9 for Windows, and Metal for MacOS. This process overview illustrates the workflow, connections, and components of WebGL within the renderer and GPU processes.
 
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image3.png">
-  <em>Figure 3: WebGL architecture</em>
-</p>
+  <figcaption><Figure 3: WebGL architecture</figcaption>
+</figure>
 
 Their design comes up with 2 potential attack surfaces that can reach from renderer:
 
@@ -201,10 +202,10 @@ index 0710737feaa2b..42c106a3fb4a3 100644
 
 To make this concrete, the figure traces how a crafted vertexAttribPointer bypasses each check and where those checks are turned off.
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image4.png">
-  <em>Figure 4: Eliminated checks on both processes</em>
-</p>
+  <figcaption><Figure 4: Eliminated checks on both processes</figcaption>
+</figure>
 
 
 After eliminating several checks above, our chance to find a vulnerability gets higher. We now present a typical out-of-bound bug that occurs in the same area with the previous issues. 
@@ -352,10 +353,10 @@ Finally, we can trigger an out-of-bound read by invoking the copy routine with a
 
 We illustrate the api working flow on this image:
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image5.png">
-  <em>Figure 5: CopyNativeVertexData API’s stacktrace</em>
-</p>
+  <figcaption><Figure 5: CopyNativeVertexData API’s stacktrace</figcaption>
+</figure>
 
 
 ## Turning into Arbitrary Read Primitive
@@ -368,10 +369,10 @@ As shown, a negative offset lets us drive src backwards from the buffer base, so
 
 Since the graphic target is new territory, we begin with a short overview of ANGLE’s rendering pipeline. In OpenGL, the rendering pipeline is a linear sequence of processing stages. It takes graphics data as input and passes it from one stage to the another, with each stage performing a specialized operation, to ultimately produce an image on the screen.
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image6.png">
-  <em>Figure 6: Rendering pipeline (image source: [here](https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html))</em>
-</p>
+  <figcaption><Figure 6: Rendering pipeline (image source: [here](https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html))</figcaption>
+</figure>
 
 
 The Khronos documentation highlights a specific feature within the rendering pipeline known as **transform feedback**:
@@ -380,10 +381,10 @@ The Khronos documentation highlights a specific feature within the rendering pip
 
 We realized that data processing in ANGLE is a continuous flow. The output of one stage directly feeds into the next. This means that when we execute the draw command, the result from one stage is saved to a buffer and used as the starting point for the next one. The following diagram shows the capture data pipeline in simple term: 
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image7.png">
-  <em>Figure 7: TransformFeedback in the rendering pipeline</em>
-</p>
+  <figcaption><Figure 7: TransformFeedback in the rendering pipeline</figcaption>
+</figure>
 
 
 Mapping with source code, `handleDirtyGraphicsVertexBuffers` function will be called after every draw command finishes. `RenderPassCommand` will read the output from the previous stage and store them into the vertex array buffer [7].
@@ -415,18 +416,18 @@ angle::Result ContextVk::handleDirtyGraphicsVertexBuffers(DirtyBits::Iterator *d
 
 Therefore, to read data produced by the rendering pipeline, we need to create an `ARRAY_VERTEX` buffer and bind them with an active transform feedback. Once the `draw command` has been executed, the data can be retrieved from the output vertex array buffer. 
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image8.png">
-  <em>Figure 8: TransformFeedback calling flow on JS</em>
-</p>
+  <figcaption><Figure 8: TransformFeedback calling flow on JS</figcaption>
+</figure>
 
 
 Finally, we are able to leak the heap address of the GPU process.
 
-<p align="center">
+<figure class="fig-center">
   <img src="images/image9.png">
-  <em>Figure 9: Leaking random library address</em>
-</p>
+  <figcaption><Figure 9: Leaking random library address</figcaption>
+</figure>
 
 
 You can access full script at [here](files/)
@@ -486,4 +487,3 @@ Currently, the new and replaceable project, WebGPU, is developing and has alread
 - https://registry.khronos.org/OpenGL-Refpages/es3.0/  
 - [https://chromium.googlesource.com/chromium/src/+/main/docs/security/research/graphics/webgpu_technical_report.md](https://chromium.googlesource.com/chromium/src/+/main/docs/security/research/graphics/webgpu_technical_report.md)  
 - [https://chromium-review.googlesource.com/c/angle/angle/+/3398816](https://chromium-review.googlesource.com/c/angle/angle/+/3398816)  
-
