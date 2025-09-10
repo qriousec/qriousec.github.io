@@ -401,7 +401,7 @@ Finally, we are able to leak the heap address of the GPU process.
 ![](images/image9.png)
 
 
-You can access full script at [here](files/)
+You can access full script at [here](https://github.com/qriousec/qriousec.github.io/tree/main/content/post/OOB-ANGLE/files)
 
 ### A variant on MacOS
 
