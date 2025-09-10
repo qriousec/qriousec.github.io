@@ -9,7 +9,7 @@ draft: false
 
 ## Introduction
 
-Back in the beginning of the year 2024, we started our project on ANGLE, it is a chromium graphic library, handling rendering stuff on chrome process. Fortunately, our team found some of the vulnerabilities in different areas (suto has shared some information on [his tweet](https://x.com/\_\_suto/status/1755048469872713873) previously). In this blog post, we will explain how a libANGLE integer underflow bug can be turned into a powerful primitive that allows us to read the Chrome WebGPU process.
+Back in the beginning of the year 2024, we started our project on ANGLE, it is a chromium graphic library, handling rendering stuff on chrome process. Fortunately, our team found some of the vulnerabilities in different areas (suto has shared some information on [his tweet](https://x.com/__suto/status/1755048469872713873) previously). In this blog post, we will explain how a libANGLE integer underflow bug can be turned into a powerful primitive that allows us to read the Chrome WebGPU process.
 
 ### ANGLE Overview
 
