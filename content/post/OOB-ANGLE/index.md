@@ -4,13 +4,7 @@ date: 2025-09-10
 draft: false
 ---
 
-# **Out-of-bound read in ANGLE CopyNativeVertexData from Compromised Renderer**
-
-
-<figure class="fig-center">
-  <img src="images/image1.png">
-  <figcaption><Figure 1: Crashes on MacOS</figcaption>
-</figure>
+![](images/image1.png)
 
 
 ## Introduction
@@ -24,10 +18,7 @@ Chrome’s graphics system includes everything needed to process, display, optim
 WebGL, in particular, is an important library within Chromium. It provides multiple APIs for creating 3D graphic effectively, and eliminates the need for external graphic software.  
 
 
-<figure class="fig-center">
-  <img src="images/image2.png">
-  <figcaption><Figure 2: A displaying example of rendering simple color by WebGL</figcaption>
-</figure>
+![](images/image2.png)
 
 
 
@@ -36,10 +27,7 @@ WebGL, in particular, is an important library within Chromium. It provides multi
 When a WebGL API is called from JavaScript, it passes through Blink bindings before being sent down to the GPU process via the command buffer. The module responsible for handling these API calls in the GPU process is ANGLE. ANGLE’s front-end initiates necessary validations and interacts with renderer APIs, ultimately channeling commands to OS-specific back-end APIs like Vulkan for Linux, D3D9 for Windows, and Metal for MacOS. This process overview illustrates the workflow, connections, and components of WebGL within the renderer and GPU processes.
 
 
-<figure class="fig-center">
-  <img src="images/image3.png">
-  <figcaption><Figure 3: WebGL architecture</figcaption>
-</figure>
+![](images/image3.png)
 
 Their design comes up with 2 potential attack surfaces that can reach from renderer:
 
@@ -202,10 +190,7 @@ index 0710737feaa2b..42c106a3fb4a3 100644
 
 To make this concrete, the figure traces how a crafted vertexAttribPointer bypasses each check and where those checks are turned off.
 
-<figure class="fig-center">
-  <img src="images/image4.png">
-  <figcaption><Figure 4: Eliminated checks on both processes</figcaption>
-</figure>
+![](images/image4.png)
 
 
 After eliminating several checks above, our chance to find a vulnerability gets higher. We now present a typical out-of-bound bug that occurs in the same area with the previous issues. 
@@ -353,10 +338,7 @@ Finally, we can trigger an out-of-bound read by invoking the copy routine with a
 
 We illustrate the api working flow on this image:
 
-<figure class="fig-center">
-  <img src="images/image5.png">
-  <figcaption><Figure 5: CopyNativeVertexData API’s stacktrace</figcaption>
-</figure>
+![](images/image5.png)
 
 
 ## Turning into Arbitrary Read Primitive
@@ -369,10 +351,7 @@ As shown, a negative offset lets us drive src backwards from the buffer base, so
 
 Since the graphic target is new territory, we begin with a short overview of ANGLE’s rendering pipeline. In OpenGL, the rendering pipeline is a linear sequence of processing stages. It takes graphics data as input and passes it from one stage to the another, with each stage performing a specialized operation, to ultimately produce an image on the screen.
 
-<figure class="fig-center">
-  <img src="images/image6.png">
-  <figcaption><Figure 6: Rendering pipeline (image source: [here](https://www3.ntu.edu.sg/home/ehchua/programming/opengl/CG_BasicsTheory.html))</figcaption>
-</figure>
+![](images/image6.png)
 
 
 The Khronos documentation highlights a specific feature within the rendering pipeline known as **transform feedback**:
@@ -381,10 +360,7 @@ The Khronos documentation highlights a specific feature within the rendering pip
 
 We realized that data processing in ANGLE is a continuous flow. The output of one stage directly feeds into the next. This means that when we execute the draw command, the result from one stage is saved to a buffer and used as the starting point for the next one. The following diagram shows the capture data pipeline in simple term: 
 
-<figure class="fig-center">
-  <img src="images/image7.png">
-  <figcaption><Figure 7: TransformFeedback in the rendering pipeline</figcaption>
-</figure>
+![](images/image7.png)
 
 
 Mapping with source code, `handleDirtyGraphicsVertexBuffers` function will be called after every draw command finishes. `RenderPassCommand` will read the output from the previous stage and store them into the vertex array buffer [7].
@@ -416,18 +392,13 @@ angle::Result ContextVk::handleDirtyGraphicsVertexBuffers(DirtyBits::Iterator *d
 
 Therefore, to read data produced by the rendering pipeline, we need to create an `ARRAY_VERTEX` buffer and bind them with an active transform feedback. Once the `draw command` has been executed, the data can be retrieved from the output vertex array buffer. 
 
-<figure class="fig-center">
-  <img src="images/image8.png">
-  <figcaption><Figure 8: TransformFeedback calling flow on JS</figcaption>
-</figure>
+![](images/image8.png)
 
 
 Finally, we are able to leak the heap address of the GPU process.
 
-<figure class="fig-center">
-  <img src="images/image9.png">
-  <figcaption><Figure 9: Leaking random library address</figcaption>
-</figure>
+
+![](images/image9.png)
 
 
 You can access full script at [here](files/)
