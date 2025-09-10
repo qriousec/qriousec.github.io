@@ -1,3 +1,9 @@
+---
+title: "Out-of-bound read in ANGLE CopyNativeVertexData from Compromised Renderer"
+date: 2025-09-10
+draft: false
+---
+
 # **Out-of-bound read in ANGLE CopyNativeVertexData from Compromised Renderer**
 
 
