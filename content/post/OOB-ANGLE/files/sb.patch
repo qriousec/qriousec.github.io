@@ -1,0 +1,69 @@
+diff --git a/gpu/command_buffer/client/gles2_implementation.cc b/gpu/command_buffer/client/gles2_implementation.cc
+index e02399bcbdc6b..8557b6f66dde4 100644
+--- a/gpu/command_buffer/client/gles2_implementation.cc
++++ b/gpu/command_buffer/client/gles2_implementation.cc
+@@ -2344,10 +2344,10 @@ void GLES2Implementation::VertexAttribPointer(GLuint index,
+   }
+   if (!support_client_side_arrays_ || bound_array_buffer_ != 0) {
+     // Only report NON client side buffers to the service.
+-    if (!ValidateOffset("glVertexAttribPointer",
+-                        reinterpret_cast<GLintptr>(ptr))) {
+-      return;
+-    }
++    // if (!ValidateOffset("glVertexAttribPointer",
++    //                     reinterpret_cast<GLintptr>(ptr))) {
++    //   return;
++    // }
+     helper_->VertexAttribPointer(index, size, type, normalized, stride,
+                                  ToGLuint(ptr));
+   }
+diff --git a/gpu/command_buffer/common/context_creation_attribs.cc b/gpu/command_buffer/common/context_creation_attribs.cc
+index 61bf78719fa11..6b97f9ef84ee9 100644
+--- a/gpu/command_buffer/common/context_creation_attribs.cc
++++ b/gpu/command_buffer/common/context_creation_attribs.cc
+@@ -27,18 +27,18 @@ bool IsGLContextType(ContextType context_type) {
+ 
+ bool IsWebGLContextType(ContextType context_type) {
+   // Switch statement to cause a compile-time error if we miss a case.
+-  switch (context_type) {
+-    case CONTEXT_TYPE_WEBGL1:
+-    case CONTEXT_TYPE_WEBGL2:
+-      return true;
+-    case CONTEXT_TYPE_OPENGLES2:
+-    case CONTEXT_TYPE_OPENGLES3:
+-    case CONTEXT_TYPE_OPENGLES31_FOR_TESTING:
+-    case CONTEXT_TYPE_WEBGPU:
+-      return false;
+-  }
+-
+-  NOTREACHED();
++  // switch (context_type) {
++  //   case CONTEXT_TYPE_WEBGL1:
++  //   case CONTEXT_TYPE_WEBGL2:
++  //     return true;
++  //   case CONTEXT_TYPE_OPENGLES2:
++  //   case CONTEXT_TYPE_OPENGLES3:
++  //   case CONTEXT_TYPE_OPENGLES31_FOR_TESTING:
++  //   case CONTEXT_TYPE_WEBGPU:
++  //     return false;
++  // }
++
++  // NOTREACHED();
+   return false;
+ }
+ 
+diff --git a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc b/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
+index 0710737feaa2b..42c106a3fb4a3 100644
+--- a/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
++++ b/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc
+@@ -7287,8 +7287,8 @@ void WebGLRenderingContextBase::vertexAttribPointer(GLuint index,
+                       "index out of range");
+     return;
+   }
+-  if (!ValidateValueFitNonNegInt32("vertexAttribPointer", "offset", offset))
+-    return;
++  // if (!ValidateValueFitNonNegInt32("vertexAttribPointer", "offset", offset))
++  //   return;
+   if (!bound_array_buffer_ && offset != 0) {
+     SynthesizeGLError(GL_INVALID_OPERATION, "vertexAttribPointer",
+                       "no ARRAY_BUFFER is bound and offset is non-zero");

