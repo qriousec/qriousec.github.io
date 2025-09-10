@@ -9,7 +9,7 @@ draft: false
 
 ## Introduction
 
-Back in the beginning of the year 2024, we started our project on ANGLE, it is a chromium graphic library, handling rendering stuff on chrome process. Fortunately, our team found some of the vulnerabilities in different areas (suto shared more information on [his tweet](https://x.com/\_\_suto/status/1755048469872713873) previously. In this blog post, we will explain our arbitrary leak in detail and how we can turn it from a standalone crashing of the ANGLE process to an important primitive on chromium.    
+Back in the beginning of the year 2024, we started our project on ANGLE, it is a chromium graphic library, handling rendering stuff on chrome process. Fortunately, our team found some of the vulnerabilities in different areas (suto has shared some information on [his tweet](https://x.com/\_\_suto/status/1755048469872713873) previously). In this blog post, we will explain our arbitrary leak in detail and how we can turn it from a standalone crashing of the ANGLE process to an important primitive on chromium.    
 
 ### ANGLE Overview
 
